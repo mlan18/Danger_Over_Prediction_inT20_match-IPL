@@ -61,8 +61,6 @@ The model uses **over‑level engineered features**, including:
 ## 🤖 Machine Learning Models
 
 - 🌲 **Random Forest Classifier**
-- 🚀 **XGBoost Classifier**
-- 🔍 Hyperparameter tuning using `RandomizedSearchCV`
 - 🛑 Match‑wise splitting using `GroupShuffleSplit` to avoid leakage
 
 ### 📊 Model Performance
