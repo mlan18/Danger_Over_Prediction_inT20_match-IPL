@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# Load model, scaler, and engineered data
 model = joblib.load("danger_over_model.joblib")
 scaler = joblib.load("danger_over_scaler.joblib")
 data = pd.read_csv("over_level_engineered.csv")
@@ -22,31 +21,44 @@ FEATURES = [
 
 st.title("⚡ Cricket Danger Over Prediction")
 
-match_id = st.number_input("Match ID", min_value=1, step=1)
-innings = st.selectbox("Innings", [1, 2])
-over = st.number_input("Over (1–20)", min_value=1, max_value=20)
+#  Match ID (ALL matches shown)
+match_ids = sorted(data["Match ID"].unique())
+match_id = st.selectbox("Select Match ID", match_ids)
+
+#  Innings
+innings = st.selectbox("Select Innings", [1, 2])
+
+filtered_data = data[
+    (data["Match ID"] == match_id) &
+    (data["Innings"] == innings)
+]
+
+#  If innings not played
+if filtered_data.empty:
+    st.warning("⚠️ This innings was not played (match may be interrupted or abandoned).")
+    st.stop()
+
+# Over selection (ONLY valid overs)
+available_overs = sorted(filtered_data["Over"].unique())
+max_over = max(available_overs)
+
+st.info(f"📊 This innings was played till **over {max_over}**")
+over = st.selectbox("Select Over", available_overs)
 
 if st.button("Predict Danger Over"):
 
-    # 🔍 Fetch real over data using Match ID
-    row = data[
-        (data["Match ID"] == match_id) &
-        (data["Innings"] == innings) &
-        (data["Over"] == over)
-    ]
+    row = filtered_data[filtered_data["Over"] == over]
 
-    if row.empty:
-        st.error("❌ Match / Innings / Over not found in dataset")
+    X = row[FEATURES]
+    X_scaled = scaler.transform(X)
+
+    pred = model.predict(X_scaled)[0]
+    prob = model.predict_proba(X_scaled)[0][1]
+
+    st.subheader("📌 Result")
+
+    if pred == 1:
+        st.error(f"🔥 Danger Over\n\nProbability: **{prob:.2f}**")
     else:
-        X = row[FEATURES]
-        X_scaled = scaler.transform(X)
+        st.success(f"🟢 Safe Over\n\nDanger Probability: **{prob:.2f}**")
 
-        pred = model.predict(X_scaled)[0]
-        prob = model.predict_proba(X_scaled)[0][1]
-
-        st.subheader("📌 Result")
-
-        if pred == 1:
-            st.error(f"🔥 Danger Over (Probability: {prob:.2f})")
-        else:
-            st.success(f"🟢 Safe Over (Danger Probability: {prob:.2f})")
