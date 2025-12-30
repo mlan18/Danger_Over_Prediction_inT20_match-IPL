@@ -30,7 +30,7 @@ This helps identify **high‑pressure overs** that significantly impact match ou
 ## 🗂 Dataset
 
 - 📄 **IPL Ball‑by‑Ball Dataset**
-- 🔢 ~240,000+ deliveries
+- 🔢 ~230,000+ deliveries
 - 🏟 Multiple seasons, teams, and venues
 
 Each ball record contains:
